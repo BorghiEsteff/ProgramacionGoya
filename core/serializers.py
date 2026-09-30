@@ -1,3 +1,4 @@
+from datetime import date
 from rest_framework import serializers
 from .models import Project, Task, Tag
  
@@ -17,6 +18,30 @@ class TaskSerializer(serializers.ModelSerializer):
             "id", "project", "title", "description",
             "priority", "status", "due_date", "tags", "created_at",
         ]
+ 
+    def validate_due_date(self, value):
+        if value and value < date.today():
+            raise serializers.ValidationError("La fecha límite no puede ser en el pasado.")
+        return value
+ 
+    def validate(self, data):
+        # Validación que involucra más de un campo
+        if data.get("status") == "completada" and not data.get("due_date"):
+            raise serializers.ValidationError(
+                "No se puede marcar una tarea como completada sin fecha límite registrada."
+            )
+        
+        # Tarea 5.2: Validación adicional
+        status_val = data.get("status") or (self.instance.status if self.instance else None)
+        project_val = data.get("project") or (self.instance.project if self.instance else None)
+        
+        if status_val == "en_progreso" and project_val:
+            if not project_val.tasks.filter(status="completada").exists():
+                raise serializers.ValidationError(
+                    "No se puede marcar una tarea como 'en_progreso' si el proyecto no tiene ninguna tarea completada todavía."
+                )
+
+        return data
  
  
 class ProjectSerializer(serializers.ModelSerializer):
