@@ -1,0 +1,56 @@
+======================================================================
+REGISTRO DE CÓDIGOS DE ESTADO HTTP - TAREA CLASE 4 / CLASE 4b
+Proyecto: TaskFlow API
+======================================================================
+
+CASO 200 OK
+Comando: curl -i http://127.0.0.1:8000/api/tasks/1/
+Primera línea: HTTP/1.1 200 OK
+Cuerpo: {"id":1,"project":1,"title":"Configurar entorno","description":"Instalar dependencias y correr migraciones","priority":"media","status":"pendiente","due_date":null,"tags":[],"created_at":"2026-10-08T15:38:02.525344Z"}
+Observación: Devuelve exitosamente los datos de una tarea existente con código 200 OK.
+
+----------------------------------------------------------------------
+
+CASO 201 Created
+Comando: curl -i -X POST http://127.0.0.1:8000/api/tasks/ -H "Content-Type: application/json" -d "{\"project\": 1, \"title\": \"Nueva\"}"
+Primera línea: HTTP/1.1 201 Created
+Cuerpo: {"id":2,"project":1,"title":"Nueva","description":"","priority":"media","status":"pendiente","due_date":null,"tags":[],"created_at":"2026-10-08T15:38:46.007221Z"}
+Observación: Creación exitosa de una tarea asociada al proyecto 1; DRF devuelve el recurso creado y código 201.
+
+----------------------------------------------------------------------
+
+CASO 204 No Content
+Comando: curl -i -X DELETE http://127.0.0.1:8000/api/tasks/2/
+Primera línea: HTTP/1.1 204 No Content
+Cuerpo: 
+Observación: Se eliminó el recurso con id 2 y el servidor responde sin contenido en el cuerpo, conforme al estándar HTTP.
+
+----------------------------------------------------------------------
+
+CASO 400 Bad Request
+Comando: curl -i -X POST http://127.0.0.1:8000/api/tasks/ -H "Content-Type: application/json" -d "{\"project\": 1}"
+Primera línea: HTTP/1.1 400 Bad Request
+Cuerpo: {"error":true,"detail":{"title":["This field is required."]}}
+Observación: Falla la validación por omisión del campo obligatorio 'title'. La respuesta viene envuelta por custom_exception_handler.
+
+----------------------------------------------------------------------
+
+CASO 404 Not Found
+Comando: curl -i http://127.0.0.1:8000/api/tasks/999/
+Primera línea: HTTP/1.1 404 Not Found
+Cuerpo: {"error":true,"detail":{"detail":"No Task matches the given query."}}
+Observación: El recurso con id 999 no existe en la base de datos. El error 404 viene estructurado por custom_exception_handler.
+
+----------------------------------------------------------------------
+
+CASO 500 Internal Server Error
+Comando: curl -i http://127.0.0.1:8000/api/tasks/romper/
+Primera línea: HTTP/1.1 500 Internal Server Error
+Cuerpo: {"error":true,"detail":"Error interno del servidor."}
+Observación: Provocado mediante una excepción no controlada (ZeroDivisionError con 1 / 0) en un endpoint temporal. El middleware custom_exception_handler la captura devolviendo status 500 y el mensaje genérico seguro.
+
+----------------------------------------------------------------------
+
+CASO 401 Unauthorized / CASO 403 Forbidden
+Estado: Pendiente, Clase 6 (JWT) y Clase 7 (permisos).
+Observación: La API actual no requiere autenticación ni permisos específicos, por lo que estos códigos se implementarán en las clases correspondientes.
